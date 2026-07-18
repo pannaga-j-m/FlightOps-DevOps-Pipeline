@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: flight-frontend
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - flight-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flight-backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - flight-network
+
+networks:
+  flight-network:
+    driver: bridge
