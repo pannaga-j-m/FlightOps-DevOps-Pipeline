@@ -24,7 +24,7 @@ pipeline {
 
         stage('Run Backend') {
             steps {
-                sh 'docker run -d --name flight-backend -p 8080:8080 flight-backend'
+                sh 'docker run -d --name flight-backend -p 3000:3000 flight-backend'
             }
         }
 
