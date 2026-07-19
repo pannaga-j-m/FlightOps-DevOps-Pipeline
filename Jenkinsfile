@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_USER = "YOUR_DOCKERHUB_USERNAME"
+        FRONTEND_IMAGE = "${DOCKERHUB_USER}/flight-frontend"
+        BACKEND_IMAGE  = "${DOCKERHUB_USER}/flight-backend"
+    }
+
     stages {
 
         stage('Build Frontend') {
@@ -15,54 +21,87 @@ pipeline {
             }
         }
 
-        stage('Stop Old Containers') {
+        stage('Stop & Remove Old Containers') {
             steps {
-                sh 'docker rm -f flight-frontend || true'
-                sh 'docker rm -f flight-backend || true'
+                sh '''
+                docker rm -f flight-frontend || true
+                docker rm -f flight-backend || true
+                '''
             }
         }
 
         stage('Run Backend') {
             steps {
-                sh 'docker run -d --name flight-backend -p 3000:3000 flight-backend'
+                sh '''
+                docker run -d \
+                  --name flight-backend \
+                  -p 8080:8080 \
+                  flight-backend
+                '''
             }
         }
 
         stage('Run Frontend') {
             steps {
-                sh 'docker run -d --name flight-frontend -p 5000:5000 flight-frontend'
+                sh '''
+                docker run -d \
+                  --name flight-frontend \
+                  -p 5000:5000 \
+                  flight-frontend
+                '''
             }
         }
 
-        stage('Verify') {
+        stage('Verify Containers') {
             steps {
                 sh 'docker ps'
             }
         }
-        stage('Docker Login') {
-     steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'dockerhub',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            '''
+
+        stage('Docker Hub Login') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Tag Images') {
+            steps {
+                sh '''
+                docker tag flight-frontend ${FRONTEND_IMAGE}:latest
+                docker tag flight-backend ${BACKEND_IMAGE}:latest
+                '''
+            }
+        }
+
+        stage('Push Images') {
+            steps {
+                sh '''
+                docker push ${FRONTEND_IMAGE}:latest
+                docker push ${BACKEND_IMAGE}:latest
+                '''
+            }
         }
     }
-}
 
-stage('Push Images') {
-    steps {
-        sh '''
-        docker tag flight-frontend YOUR_USERNAME/flight-frontend:latest
-        docker tag flight-backend YOUR_USERNAME/flight-backend:latest
+    post {
+        always {
+            sh 'docker logout || true'
+        }
 
-        docker push YOUR_USERNAME/flight-frontend:latest
-        docker push YOUR_USERNAME/flight-backend:latest
-        '''
-    }
-}
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+
+        failure {
+            echo 'Pipeline failed.'
+        }
     }
 }
