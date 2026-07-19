@@ -39,5 +39,30 @@ pipeline {
                 sh 'docker ps'
             }
         }
+        stage('Docker Login') {
+     steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            '''
+        }
+    }
+}
+
+stage('Push Images') {
+    steps {
+        sh '''
+        docker tag flight-frontend YOUR_USERNAME/flight-frontend:latest
+        docker tag flight-backend YOUR_USERNAME/flight-backend:latest
+
+        docker push YOUR_USERNAME/flight-frontend:latest
+        docker push YOUR_USERNAME/flight-backend:latest
+        '''
+    }
+}
     }
 }
