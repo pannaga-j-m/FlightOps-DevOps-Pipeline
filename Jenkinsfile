@@ -35,7 +35,7 @@ pipeline {
                 sh '''
                 docker run -d \
                   --name flight-backend \
-                  -p 8080:8080 \
+                  -p 3000:3000 \
                   flight-backend
                 '''
             }
@@ -60,8 +60,8 @@ pipeline {
 
         stage('Docker Hub Login') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
+                withCredentials([pannagajm2004(
+                    credentialsId: 'docker',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
