@@ -4,14 +4,24 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     libgl1 \
-    && rm -rf /var/lib/apt/lists/*
+    libglib2.0-0 \
+    libxkbcommon0 \
+    libxkbcommon-x11-0 \
+    libxcb1 \
+    libxcb-cursor0 \
+    libxcb-xinerama0 \
+    libxcb-randr0 \
+    libxcb-shape0 \
+    libxcb-xfixes0 \
+    libsm6 \
+    libxext6 \
+    libxrender1
 
 COPY requirements.txt .
 
+RUN pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-
-EXPOSE 5000
 
 CMD ["python", "Main.py"]
