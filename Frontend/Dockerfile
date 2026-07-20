@@ -4,6 +4,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     libgl1 \
+    libegl1 \
     libglib2.0-0 \
     libxkbcommon0 \
     libxkbcommon-x11-0 \
@@ -15,7 +16,8 @@ RUN apt-get update && apt-get install -y \
     libxcb-xfixes0 \
     libsm6 \
     libxext6 \
-    libxrender1
+    libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 
