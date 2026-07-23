@@ -26,5 +26,5 @@ RUN pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-
+ENV QT_QPA_PLATFORM=offscreen
 CMD ["python", "Main.py"]
